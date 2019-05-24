@@ -3,7 +3,6 @@ import sqlite3
 from bs4 import BeautifulSoup
 import nltk
 from stopwords import stop_words_slovene
-from collections import Counter
 
 
 DATA_DIR = Path('DATA/')
@@ -45,8 +44,8 @@ if __name__ == "__main__":
     webpages = {webpage.name:webpage.read_text() for webpage in WEBPAGES_DIR.glob('**/*.html')}
     print("\t...done!")
     print("***Processing webpages...")
-    webpages_processed = {key:preprocess_document(content) for key,content in Swebpages.items()}
-    #webpages_processed = {key:preprocess_document(content) for key,content in list(webpages.items())[:10]}
+    #webpages_processed = {key:preprocess_document(content) for key,content in webpages.items()}
+    webpages_processed = {key:preprocess_document(content) for key,content in list(webpages.items())[:10]}
     print("\t...done!")
     token_insert_statement='''INSERT INTO IndexWord(word) 
                                 SELECT ?
@@ -80,6 +79,7 @@ if __name__ == "__main__":
                                documentName))
             db_conn.commit()
         i_doc+=1     
-    print("\t...done!")        
+    print("\t...done!")  
+    db_conn.close()      
             
             
