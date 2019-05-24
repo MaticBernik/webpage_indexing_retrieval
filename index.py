@@ -45,15 +45,41 @@ if __name__ == "__main__":
     webpages = {webpage.name:webpage.read_text() for webpage in WEBPAGES_DIR.glob('**/*.html')}
     print("\t...done!")
     print("***Processing webpages...")
-    #webpages_processed = {key:preprocess_document(content) for key,content in Swebpages.items()}
-    webpages_processed = {key:preprocess_document(content) for key,content in list(webpages.items())[:10]}
+    webpages_processed = {key:preprocess_document(content) for key,content in Swebpages.items()}
+    #webpages_processed = {key:preprocess_document(content) for key,content in list(webpages.items())[:10]}
     print("\t...done!")
-    for name,content in webpages_processed.items():
-        c = Counter(content)
-        token_insert_statement='''INSERT INTO IndexWord(word) 
+    token_insert_statement='''INSERT INTO IndexWord(word) 
                                 SELECT ?
                                 WHERE NOT EXISTS(SELECT 1 FROM IndexWord WHERE word = ?);'''
-        for word in c:
-            db_cursor.execute(token_insert_statement,(word,word))
+    posting_insert_statement='''INSERT INTO Posting(word,documentName,frequency,indexes) 
+                                SELECT ?,?,?,?
+                                WHERE NOT EXISTS(SELECT 1 FROM Posting WHERE word = ? AND documentName = ?);'''                             
+    vocab=set()
+    i_doc=1
+    print("***Building index...")
+    for documentName,documentContent in webpages_processed.items():
+        print("\t\t",str(i_doc)+" / "+str(len(webpages_processed)))
+        document_vocab = set(documentContent)
+        vocab=vocab.union(document_vocab)
+        token_indices={w:[] for w in document_vocab}
+        #Insert new tokens to word index 
+        for token in document_vocab:
+            db_cursor.execute(token_insert_statement,(token,token))
             db_conn.commit()
-        
+        #Find token indices    
+        for idx,token in enumerate(documentContent):    
+            token_indices[token].append(idx)
+        #Insert new postings
+        for token,indices in token_indices.items():
+            db_cursor.execute(posting_insert_statement,
+                              (token,
+                               documentName,
+                               len(indices),
+                               ','.join([str(i) for i in indices]),
+                               token,
+                               documentName))
+            db_conn.commit()
+        i_doc+=1     
+    print("\t...done!")        
+            
+            
