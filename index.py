@@ -26,27 +26,32 @@ def extract_text(html : str):
     text = soup.get_text()
     return text
 
-def preprocess_document(html : str):
+def extract_text_tokenize(html : str):
     #Extract text from html webpage
-    #text = ' '.join(extract_text(html))
     text = extract_text(html)
     #Tokenize text
     tokens = nltk.word_tokenize(text)
+    return tokens
+
+def preprocess_document(html : str):
+    tokens = extract_text_tokenize(html)
+    #Enumerate tokens
+    tokens = enumerate(tokens)
     #Remove tokens of lenght 1
-    tokens = [token for token in tokens if len(token)>1]
+    tokens = [token for token in tokens if len(token[1])>1]
     #Remove stopwords
-    tokens = [token for token in tokens if token not in stop_words_slovene]
+    tokens = [token for token in tokens if token[1] not in stop_words_slovene]
     #Remove tokens consisting only of punctuations
     #punctuation_pattern = re.compile(r"\b["+string.punctuation+"]+\b")
     punctuation_pattern = re.compile(r"^[^\d^\s^\w]+$")
-    tokens = [token for token in tokens if not punctuation_pattern.match(token)]
+    tokens = [token for token in tokens if not punctuation_pattern.match(token[1])]
     #Swap all numbers with $NUMBER tag
     number_pattern = re.compile(r"^\d+[.,\d]*$")
-    tokens = ["$NUMBER" if number_pattern.match(token) else token for token in tokens]
+    tokens = [(token[0],"$NUMBER") if number_pattern.match(token[1]) else token for token in tokens]
     #Swap every token containing '=' with $EQUALS tag
-    tokens = ["$EQUALS" if '=' in token else token for token in tokens]
+    tokens = [(token[0],"$EQUALS") if '=' in token else token for token in tokens]
     #Lowercase
-    tokens = [token.lower() for token in tokens]
+    tokens = [(token[0],token[1].lower()) for token in tokens]
     return tokens
 
 
@@ -72,7 +77,7 @@ if __name__ == "__main__":
         print("\t\tProcessing webpage..")
         documentContent = preprocess_document(htmlContent)
         print("\t\tBuilding index...")
-        document_vocab = set(documentContent)
+        document_vocab = set(token[1] for token in documentContent)
         vocab=vocab.union(document_vocab)
         token_indices={w:[] for w in document_vocab}
         #Insert new tokens to word index 
@@ -80,7 +85,7 @@ if __name__ == "__main__":
             db_cursor.execute(token_insert_statement,(token,token))
             db_conn.commit()
         #Find token indices    
-        for idx,token in enumerate(documentContent):    
+        for idx,token in documentContent:    
             token_indices[token].append(idx)
         #Insert new postings
         for token,indices in token_indices.items():
