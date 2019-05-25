@@ -1,6 +1,8 @@
-from index import preprocess_document
+from index import preprocess_document, extract_text
 from pathlib import Path
+from stopwords import stop_words_slovene
 import sqlite3
+import nltk
 from typing import Sequence
 
 DATA_DIR = Path('DATA/')
@@ -36,7 +38,23 @@ def query_indexed(query: Sequence[str]):
     return retrieved_data
 
 
-def display_query_results(retrieved_data):
+def get_document_tokenized(path_html):
+
+    with open(path_html, "r") as f:
+        html = f.read()
+
+    html_text = extract_text(html)
+    text = ' '.join(html_text)
+    tokens = nltk.word_tokenize(text)
+
+    # TODO: COMMENT OUT THIS PART ( SHOULD BE REGARDIN THE ORIGINAL FILE)
+    #Remove stopwords
+    tokens = [token for token in tokens if token not in stop_words_slovene]
+    #Lowercase
+    tokens = [token.lower() for token in tokens]
+    return tokens
+
+def display_query_results(retrieved_data, window_size=3):
 
     retrieved_data = sorted(retrieved_data, reverse=True)
 
@@ -47,7 +65,24 @@ def display_query_results(retrieved_data):
         folder_name = ".".join(document[1].split('.')[:3])
         document_path = WEBPAGES_DIR / folder_name / document[1]
 
-        hits_string = " ".join([str(i) for i in document[2]])
+        doc_tokens = get_document_tokenized(document_path)
+        # hits_string = " ".join([str(i) for i in document[2]])
+
+        hits_string = ""
+
+        for i in document[2]:
+
+            start_indx = 0 if i - window_size < 0 else i - window_size
+            end_indx = len(doc_tokens) if i + window_size > len(doc_tokens) else i + window_size
+
+            if end_indx == len(doc_tokens):
+                hits_string += " ".join(doc_tokens[start_indx:end_indx])
+            else:
+                hits_string += " ".join(doc_tokens[start_indx:end_indx])
+                hits_string += " ... "
+
+            print(hits_string)
+        
 
         print("{:12} {:42} {:60}".format(str(document[0]), document[1], hits_string))
 
