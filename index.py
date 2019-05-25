@@ -3,6 +3,8 @@ import sqlite3
 from bs4 import BeautifulSoup
 import nltk
 from stopwords import stop_words_slovene
+import re
+import string
 
 
 DATA_DIR = Path('DATA/')
@@ -20,16 +22,29 @@ def connect_database():
 
 def extract_text(html : str):
     soup = BeautifulSoup(html, features="lxml")
-    text = soup.findAll(text=True)
+    #text = soup.findAll(text=True)
+    text = soup.get_text()
     return text
 
 def preprocess_document(html : str):
     #Extract text from html webpage
-    text = ' '.join(extract_text(html))
+    #text = ' '.join(extract_text(html))
+    text = extract_text(html)
     #Tokenize text
     tokens = nltk.word_tokenize(text)
+    #Remove tokens of lenght 1
+    tokens = [token for token in tokens if len(token)>1]
     #Remove stopwords
     tokens = [token for token in tokens if token not in stop_words_slovene]
+    #Remove tokens consisting only of punctuations
+    #punctuation_pattern = re.compile(r"\b["+string.punctuation+"]+\b")
+    punctuation_pattern = re.compile(r"^[^\d^\s^\w]+$")
+    tokens = [token for token in tokens if not punctuation_pattern.match(token)]
+    #Swap all numbers with $NUMBER tag
+    number_pattern = re.compile(r"^\d+[.,\d]*$")
+    tokens = ["$NUMBER" if number_pattern.match(token) else token for token in tokens]
+    #Swap every token containing '=' with $EQUALS tag
+    tokens = ["$EQUALS" if '=' in token else token for token in tokens]
     #Lowercase
     tokens = [token.lower() for token in tokens]
     return tokens
@@ -43,21 +58,20 @@ if __name__ == "__main__":
     print("***Reading webpages...")
     webpages = {webpage.name:webpage.read_text() for webpage in WEBPAGES_DIR.glob('**/*.html')}
     print("\t...done!")
-    print("***Processing webpages...")
-    #webpages_processed = {key:preprocess_document(content) for key,content in webpages.items()}
-    webpages_processed = {key:preprocess_document(content) for key,content in list(webpages.items())[:10]}
-    print("\t...done!")
     token_insert_statement='''INSERT INTO IndexWord(word) 
                                 SELECT ?
                                 WHERE NOT EXISTS(SELECT 1 FROM IndexWord WHERE word = ?);'''
     posting_insert_statement='''INSERT INTO Posting(word,documentName,frequency,indexes) 
                                 SELECT ?,?,?,?
                                 WHERE NOT EXISTS(SELECT 1 FROM Posting WHERE word = ? AND documentName = ?);'''                             
+    print("***Processing and indexing webpages...")
     vocab=set()
-    i_doc=1
-    print("***Building index...")
-    for documentName,documentContent in webpages_processed.items():
-        print("\t\t",str(i_doc)+" / "+str(len(webpages_processed)))
+    i_doc=1       
+    for documentName,htmlContent in webpages.items():
+        print("\t",str(i_doc)+" / "+str(len(webpages_processed)),'\t'+documentName)
+        print("\t\tProcessing webpage..")
+        documentContent = preprocess_document(htmlContent)
+        print("\t\tBuilding index...")
         document_vocab = set(documentContent)
         vocab=vocab.union(document_vocab)
         token_indices={w:[] for w in document_vocab}
@@ -78,7 +92,8 @@ if __name__ == "__main__":
                                token,
                                documentName))
             db_conn.commit()
-        i_doc+=1     
+        i_doc+=1   
+          
     print("\t...done!")  
     db_conn.close()      
             
