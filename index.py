@@ -22,7 +22,8 @@ def connect_database():
 
 def extract_text(html : str):
     soup = BeautifulSoup(html, "html.parser")
-    #text = soup.findAll(text=True)
+    #remove script tags from document
+    [s.extract() for s in soup('script')]    
     text = soup.get_text()
     return text
 
