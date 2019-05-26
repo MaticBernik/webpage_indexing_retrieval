@@ -18,9 +18,9 @@ def query_naive(query: Sequence[str]):
 
 
 def query_indexed(query: Sequence[str]):
-
+    
     indices = retrieve_indices(query)
-
+    
     retrieved_data = []
     for document in indices:
 
@@ -38,7 +38,7 @@ def query_indexed(query: Sequence[str]):
     return retrieved_data
 
 
-def get_document_tokenized(path_html):
+def DEPRECATED_get_document_tokenized(path_html):
 
     with open(path_html, "r") as f:
         html = f.read()
@@ -52,6 +52,13 @@ def get_document_tokenized(path_html):
     tokens = [token for token in tokens if token not in stop_words_slovene]
     #Lowercase
     tokens = [token.lower() for token in tokens]
+    return tokens
+
+def get_document_tokenized(path_html):
+
+    html = path_html.read_text()
+    tokens = extract_text_tokenize(html)
+
     return tokens
 
 def display_query_results(retrieved_data, window_size=3):
@@ -73,7 +80,7 @@ def display_query_results(retrieved_data, window_size=3):
         for i in document[2]:
 
             start_indx = 0 if i - window_size < 0 else i - window_size
-            end_indx = len(doc_tokens) if i + window_size > len(doc_tokens) else i + window_size
+            end_indx = len(doc_tokens) if i + window_size + 1 > len(doc_tokens) else i + window_size + 1
 
             if end_indx == len(doc_tokens):
                 hits_string += " ".join(doc_tokens[start_indx:end_indx])
@@ -81,9 +88,8 @@ def display_query_results(retrieved_data, window_size=3):
                 hits_string += " ".join(doc_tokens[start_indx:end_indx])
                 hits_string += " ... "
 
-            print(hits_string)
+            # print(hits_string)
         
-
         print("{:12} {:42} {:60}".format(str(document[0]), document[1], hits_string))
 
 
@@ -94,7 +100,7 @@ def retrieve_indices(query: Sequence[str]):
     cursor = conn.cursor()
 
     postings = []
-    for word in query:
+    for (_, word) in query:
         cursor.execute(posting_select_statement, (word, ))
         postings += cursor.fetchall()
 
