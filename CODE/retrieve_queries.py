@@ -6,7 +6,7 @@ import nltk
 from typing import Sequence
 import time
 
-DATA_DIR = Path('DATA/')
+DATA_DIR = Path('../DATA/')
 WEBPAGES_DIR = DATA_DIR / 'webpages/'
 QUERY_RESULTS_DIR = DATA_DIR / 'query_results/'
 SQLITE_PATH = DATA_DIR / 'webpage_index.db'

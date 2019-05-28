@@ -7,7 +7,7 @@ import re
 import string
 
 
-DATA_DIR = Path('DATA/')
+DATA_DIR = Path('../DATA/')
 WEBPAGES_DIR = DATA_DIR / 'webpages/'
 SQL_SCRIPT_PATH = DATA_DIR / 'build_index.sql'
 #STOPWORDS_SCRIPT = DATA_DIR / 'stopwords.py'
