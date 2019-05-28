@@ -5,6 +5,7 @@ import nltk
 from stopwords import stop_words_slovene
 import re
 import string
+import time
 
 
 DATA_DIR = Path('../DATA/')
@@ -49,7 +50,7 @@ def preprocess_document(html : str):
     punctuation_pattern = re.compile(r"^[^\d^\s^\w]+$")
     tokens = [token for token in tokens if not punctuation_pattern.match(token[1])]
     # Swap all numbers with $NUMBER tag
-    number_pattern = re.compile(r"^\d+[.,\d]*$")
+    number_pattern = re.compile(r"^[-−]?\d+[.,\d]*$")
     tokens = [(token[0],"$NUMBER") if number_pattern.match(token[1]) else token for token in tokens]
     # Swap every token containing '=' with $EQUALS tag
     tokens = [(token[0],"$EQUALS") if '=' in token[1] else token for token in tokens]
@@ -71,6 +72,7 @@ if __name__ == "__main__":
                                 SELECT ?,?,?,?
                                 WHERE NOT EXISTS(SELECT 1 FROM Posting WHERE word = ? AND documentName = ?);'''                             
     print("***Indexing webpages...")
+    start_time=time.time()
     #vocab=set()
     i_doc=1
     webpages = list(WEBPAGES_DIR.glob('**/*.html'))
@@ -105,7 +107,7 @@ if __name__ == "__main__":
         db_conn.commit()    
         i_doc+=1   
           
-    print("\t...done!")  
+    print("\t...done! ",time.time()-start_time)  
     db_conn.close()      
             
             
