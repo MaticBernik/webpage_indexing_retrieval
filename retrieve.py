@@ -11,7 +11,6 @@ WEBPAGES_DIR = DATA_DIR / 'webpages/'
 QUERY_RESULTS_DIR = DATA_DIR / 'query_results/'
 SQLITE_PATH = DATA_DIR / 'webpage_index.db'
 QUERIES = ["predelovalne dejavnosti", "trgovina", "social services"]
-# QUERIES = ["proizvodnja dejavnosti", "trgovina", "social services"]
 
 
 def query_naive(query: Sequence[str]):
@@ -38,7 +37,6 @@ def query_naive(query: Sequence[str]):
     return list(index_tree.values())
 
 
-
 def query_indexed(query: Sequence[str]):
     
     indices = retrieve_indices(query)
@@ -60,22 +58,6 @@ def query_indexed(query: Sequence[str]):
     return retrieved_data
 
 
-def DEPRECATED_get_document_tokenized(path_html):
-
-    with open(path_html, "r") as f:
-        html = f.read()
-
-    html_text = extract_text(html)
-    text = ' '.join(html_text)
-    tokens = nltk.word_tokenize(text)
-
-    # TODO: COMMENT OUT THIS PART ( SHOULD BE REGARDIN THE ORIGINAL FILE)
-    #Remove stopwords
-    tokens = [token for token in tokens if token not in stop_words_slovene]
-    #Lowercase
-    tokens = [token.lower() for token in tokens]
-    return tokens
-
 def get_document_tokenized(path_html, raw=False):
 
     html = path_html.read_text()
@@ -86,6 +68,7 @@ def get_document_tokenized(path_html, raw=False):
         tokens = extract_text_tokenize(html)
 
     return tokens
+
 
 def gather_query_results(retrieved_data, window_size=3):
 
@@ -116,10 +99,6 @@ def gather_query_results(retrieved_data, window_size=3):
 
     return results
 
-def display_query_results_limited(query_results):
-
-    for row in query_results:
-        print(row[:300])
 
 def write_query_results(query, query_time, query_results, lookup_type):
 
@@ -134,10 +113,17 @@ def write_query_results(query, query_time, query_results, lookup_type):
     output.extend(query_results)
     
     output_path = str(QUERY_RESULTS_DIR) + "/" + lookup_type + "-" + str_query+ ".txt"
-    print("output path: ", output_path)
+    print("Writing query results to: ", output_path)
     with open(output_path, 'w') as f:
         f.write("\n".join(output))
     
+
+def display_query_results_limited(query_results):
+
+    for row in query_results:
+        print(row[:300])
+
+
 def display_query_results_raw(retrieved_data, window_size=3):
 
     retrieved_data = sorted(retrieved_data, reverse=True)
@@ -189,12 +175,13 @@ def retrieve_indices(query: Sequence[str]):
     return indices_by_files
 
 
-"""if __name__ == "__main__":
+if __name__ == "__main__":
 
     #Preprocess queries
     QUERIES = [preprocess_document(q) for q in QUERIES]
+
     for query in QUERIES:
-        print("Query: ", query)
+        print("Querying: ", query)
 
         start_t = time.time()
         if SQLITE_PATH.exists():
@@ -202,35 +189,9 @@ def retrieve_indices(query: Sequence[str]):
             query_results = query_indexed(query)
         else:
             lookup_type = "RAW"
-        slow_query_results = query_naive(query)
+            query_results = query_naive(query)
 
         end_t = time.time()
 
         lookup_results = gather_query_results(query_results)
-        # display_query_results_limited(lookup_results)
         write_query_results(query, end_t-start_t, lookup_results, lookup_type)
-        # display_query_results(query_results)"""
-
-
-if __name__ == "__main__":
-
-    #Preprocess queries
-    QUERIES = [preprocess_document(q) for q in QUERIES]
-    for query in QUERIES:
-        print("Query: ", query)
-
-        start_t = time.time()
-        lookup_type = "DB"
-        query_results = query_indexed(query)
-        end_t = time.time()
-        lookup_results = gather_query_results(query_results)
-        write_query_results(query, end_t-start_t, lookup_results, lookup_type)
-        print("Time: ", end_t-start_t)
-
-        start_t = time.time()
-        lookup_type = "RAW"
-        query_results = query_naive(query)
-        end_t = time.time()
-        lookup_results = gather_query_results(query_results)
-        write_query_results(query, end_t-start_t, lookup_results, lookup_type)
-        print("Time: ", end_t-start_t)
