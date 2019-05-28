@@ -1,15 +1,42 @@
-Query:  [(0, 'predelovalne'), (1, 'dejavnosti')]
-output path:  DATA/query_results/DB-predelovalne_dejavnosti.txt
-Time:  0.007209300994873047
-output path:  DATA/query_results/RAW-predelovalne_dejavnosti.txt
-Time:  52.85151505470276
-Query:  [(0, 'trgovina')]
-output path:  DATA/query_results/DB-trgovina.txt
-Time:  0.0024039745330810547
-output path:  DATA/query_results/RAW-trgovina.txt
-Time:  54.18530631065369
-Query:  [(0, 'social'), (1, 'services')]
-output path:  DATA/query_results/DB-social_services.txt
-Time:  0.0007460117340087891
-output path:  DATA/query_results/RAW-social_services.txt
-Time:  54.63441467285156
+Querying:  [(0, 'predelovalne'), (1, 'dejavnosti')]
+Time db:  0.006934404373168945
+Writing query results to:  DATA/query_results/DB-predelovalne_dejavnosti.txt
+Time naive:  49.295302391052246
+Writing query results to:  DATA/query_results/RAW-predelovalne_dejavnosti.txt
+=============================================================
+Querying:  [(0, 'trgovina')]
+Time db:  0.0021185874938964844
+Writing query results to:  DATA/query_results/DB-trgovina.txt
+Time naive:  49.42268776893616
+Writing query results to:  DATA/query_results/RAW-trgovina.txt
+=============================================================
+Querying:  [(0, 'social'), (1, 'services')]
+Time db:  0.0007781982421875
+Writing query results to:  DATA/query_results/DB-social_services.txt
+Time naive:  49.292237520217896
+Writing query results to:  DATA/query_results/RAW-social_services.txt
+=============================================================
+Querying:  [(0, 'finance'), (1, 'borza'), (2, 'trg')]
+Time db:  0.004800081253051758
+Writing query results to:  DATA/query_results/DB-finance_borza_trg.txt
+Time naive:  49.62685489654541
+Writing query results to:  DATA/query_results/RAW-finance_borza_trg.txt
+=============================================================
+Querying:  [(0, 'podatki'), (1, 'analiza'), (2, 'znanost')]
+Time db:  0.009835481643676758
+Writing query results to:  DATA/query_results/DB-podatki_analiza_znanost.txt
+Time naive:  49.51790952682495
+Writing query results to:  DATA/query_results/RAW-podatki_analiza_znanost.txt
+=============================================================
+Querying:  [(0, 'zakon')]
+Time db:  0.004954814910888672
+Writing query results to:  DATA/query_results/DB-zakon.txt
+Time naive:  51.25057101249695
+Writing query results to:  DATA/query_results/RAW-zakon.txt
+=============================================================
+Querying:  [(0, 'kataster'), (1, 'zemljišče'), (2, 'davek'), (3, 'meja'), (4, 'ocena'), (5, 'vlada'), (6, 'stavba'), (7, 'model'), (8, 'register'), (9, 'javni')]
+Time db:  0.012973546981811523
+Writing query results to:  DATA/query_results/DB-kataster_zemljišče_davek_meja_ocena_vlada_stavba_model_register_javni.txt
+Time naive:  53.90467548370361
+Writing query results to:  DATA/query_results/RAW-kataster_zemljišče_davek_meja_ocena_vlada_stavba_model_register_javni.txt
+=============================================================

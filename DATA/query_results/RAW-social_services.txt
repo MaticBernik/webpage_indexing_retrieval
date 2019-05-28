@@ -1,6 +1,6 @@
 Results for a query: "social_services"
 
-Results found in 54.63441467285156s
+Results found in 49.292237520217896s
 
 Freq.        Document                                  Snippet
 -----------  ----------------------------------------- -----------------------------------------------------------

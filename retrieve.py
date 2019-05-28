@@ -11,7 +11,7 @@ WEBPAGES_DIR = DATA_DIR / 'webpages/'
 QUERY_RESULTS_DIR = DATA_DIR / 'query_results/'
 SQLITE_PATH = DATA_DIR / 'webpage_index.db'
 QUERIES = ["predelovalne dejavnosti", "trgovina", "social services"]
-
+QUERIES.extend(["finance borza trg", "podatki analiza znanost", "zakon", "kataster zemljišče davek meja ocena vlada stavba model register javni"])
 
 def query_naive(query: Sequence[str]):
     webpages = list(WEBPAGES_DIR.glob('**/*.html'))

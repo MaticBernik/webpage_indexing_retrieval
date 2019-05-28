@@ -1,6 +1,6 @@
 Results for a query: "predelovalne_dejavnosti"
 
-Results found in 0.007351398468017578s
+Results found in 0.006934404373168945s
 
 Freq.        Document                                  Snippet
 -----------  ----------------------------------------- -----------------------------------------------------------
