@@ -4,17 +4,39 @@ from stopwords import stop_words_slovene
 import sqlite3
 import nltk
 from typing import Sequence
+import time
 
 DATA_DIR = Path('DATA/')
 WEBPAGES_DIR = DATA_DIR / 'webpages/'
+QUERY_RESULTS_DIR = DATA_DIR / 'query_results/'
 SQLITE_PATH = DATA_DIR / 'webpage_index.db'
-# QUERIES = ["predelovalne dejavnosti", "trgovina", "social services"]
-QUERIES = ["proizvodnja dejavnosti", "trgovina", "social services"]
+QUERIES = ["predelovalne dejavnosti", "trgovina", "social services"]
+# QUERIES = ["proizvodnja dejavnosti", "trgovina", "social services"]
 
 
 def query_naive(query: Sequence[str]):
-    pass
-    return None
+    webpages = list(WEBPAGES_DIR.glob('**/*.html'))
+    
+    index_tree = {}
+    query_list = [ q for (_, q)  in query]
+    
+
+    for webpage in webpages:
+        tokenized_doc = get_document_tokenized(webpage, raw=True)
+        
+        for (t_i, token) in tokenized_doc:
+            
+            if token in query_list:
+                web_name = str(webpage.name)
+
+                if web_name not in index_tree:
+                    index_tree[web_name] = [1, web_name, [t_i]]
+                else:
+                    index_tree[web_name][0] += 1
+                    index_tree[web_name][2].append(t_i)
+
+    return list(index_tree.values())
+
 
 
 def query_indexed(query: Sequence[str]):
@@ -54,14 +76,69 @@ def DEPRECATED_get_document_tokenized(path_html):
     tokens = [token.lower() for token in tokens]
     return tokens
 
-def get_document_tokenized(path_html):
+def get_document_tokenized(path_html, raw=False):
 
     html = path_html.read_text()
-    tokens = extract_text_tokenize(html)
+
+    if raw:
+        tokens = preprocess_document(html)
+    else:
+        tokens = extract_text_tokenize(html)
 
     return tokens
 
-def display_query_results(retrieved_data, window_size=3):
+def gather_query_results(retrieved_data, window_size=3):
+
+    retrieved_data = sorted(retrieved_data, reverse=True, key=lambda x: x[0])
+    results = []
+
+    for d_i, document in enumerate(retrieved_data):
+
+        folder_name = ".".join(document[1].split('.')[:3])
+        document_path = WEBPAGES_DIR / folder_name / document[1]
+        doc_tokens = get_document_tokenized(document_path)
+
+        hits_string = "..."
+
+        for i in document[2]:
+
+            start_indx = 0 if i - window_size < 0 else i - window_size
+            end_indx = len(doc_tokens) if i + window_size + 1 > len(doc_tokens) else i + window_size + 1
+
+            if end_indx == len(doc_tokens):
+                hits_string += " ".join(doc_tokens[start_indx:end_indx])
+            else:
+                hits_string += " ".join(doc_tokens[start_indx:end_indx])
+                hits_string += " ... "
+
+        doc_hits = "{:12} {:42} {:60}".format(str(document[0]), document[1], hits_string)
+        results.append(doc_hits)
+
+    return results
+
+def display_query_results_limited(query_results):
+
+    for row in query_results:
+        print(row[:300])
+
+def write_query_results(query, query_time, query_results, lookup_type):
+
+    output = []
+    str_query = "_".join([str(word) for (_, word) in query ])
+    header_query = "Results for a query: \"" + str_query + "\""
+    header_stats = "Results found in " + str(query_time) + "s"
+    header_title = "Freq.        Document                                  Snippet"
+    header_break = "-----------  ----------------------------------------- -----------------------------------------------------------"
+
+    output.extend([header_query, "", header_stats, "", header_title, header_break])
+    output.extend(query_results)
+    
+    output_path = str(QUERY_RESULTS_DIR) + "/" + lookup_type + "-" + str_query+ ".txt"
+    print("output path: ", output_path)
+    with open(output_path, 'w') as f:
+        f.write("\n".join(output))
+    
+def display_query_results_raw(retrieved_data, window_size=3):
 
     retrieved_data = sorted(retrieved_data, reverse=True)
 
@@ -75,7 +152,7 @@ def display_query_results(retrieved_data, window_size=3):
         doc_tokens = get_document_tokenized(document_path)
         # hits_string = " ".join([str(i) for i in document[2]])
 
-        hits_string = ""
+        hits_string = "..."
 
         for i in document[2]:
 
@@ -112,20 +189,48 @@ def retrieve_indices(query: Sequence[str]):
     return indices_by_files
 
 
+"""if __name__ == "__main__":
+
+    #Preprocess queries
+    QUERIES = [preprocess_document(q) for q in QUERIES]
+    for query in QUERIES:
+        print("Query: ", query)
+
+        start_t = time.time()
+        if SQLITE_PATH.exists():
+            lookup_type = "DB"
+            query_results = query_indexed(query)
+        else:
+            lookup_type = "RAW"
+        slow_query_results = query_naive(query)
+
+        end_t = time.time()
+
+        lookup_results = gather_query_results(query_results)
+        # display_query_results_limited(lookup_results)
+        write_query_results(query, end_t-start_t, lookup_results, lookup_type)
+        # display_query_results(query_results)"""
+
+
 if __name__ == "__main__":
 
     #Preprocess queries
     QUERIES = [preprocess_document(q) for q in QUERIES]
     for query in QUERIES:
-        print("QUERY: ")
-        print(query)
-        if SQLITE_PATH.exists():
-            query_results = query_indexed(query)
-        else:
-            query_results = query_naive(query)
+        print("Query: ", query)
 
-        display_query_results(query_results)
+        start_t = time.time()
+        lookup_type = "DB"
+        query_results = query_indexed(query)
+        end_t = time.time()
+        lookup_results = gather_query_results(query_results)
+        write_query_results(query, end_t-start_t, lookup_results, lookup_type)
+        print("Time: ", end_t-start_t)
 
-        print("==============================================================================================================================")
-        print("//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
-        print("==============================================================================================================================")
+        start_t = time.time()
+        lookup_type = "RAW"
+        query_results = query_naive(query)
+        end_t = time.time()
+        lookup_results = gather_query_results(query_results)
+        write_query_results(query, end_t-start_t, lookup_results, lookup_type)
+        print("Time: ", end_t-start_t)

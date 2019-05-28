@@ -1,0 +1,15 @@
+Query:  [(0, 'predelovalne'), (1, 'dejavnosti')]
+output path:  DATA/query_results/DB-predelovalne_dejavnosti.txt
+Time:  0.007209300994873047
+output path:  DATA/query_results/RAW-predelovalne_dejavnosti.txt
+Time:  52.85151505470276
+Query:  [(0, 'trgovina')]
+output path:  DATA/query_results/DB-trgovina.txt
+Time:  0.0024039745330810547
+output path:  DATA/query_results/RAW-trgovina.txt
+Time:  54.18530631065369
+Query:  [(0, 'social'), (1, 'services')]
+output path:  DATA/query_results/DB-social_services.txt
+Time:  0.0007460117340087891
+output path:  DATA/query_results/RAW-social_services.txt
+Time:  54.63441467285156

@@ -24,6 +24,8 @@ def extract_text(html : str):
     soup = BeautifulSoup(html, "html.parser")
     #remove script tags from document
     [s.extract() for s in soup('script')]    
+    #remove style tags from document
+    [s.extract() for s in soup('style')] 
     text = soup.get_text()
     return text
 
@@ -75,11 +77,11 @@ if __name__ == "__main__":
     for webpage in webpages:
         documentName = webpage.name
         print("\t",str(i_doc)+" / "+str(len(webpages)),'\t'+documentName)
-        print("\t\tLoading webpage text content...")
+        # print("\t\tLoading webpage text content...")
         htmlContent = webpage.read_text()
-        print("\t\tProcessing webpage..")
+        # print("\t\tProcessing webpage..")
         documentContent = preprocess_document(htmlContent)
-        print("\t\tExtending vocabulary...")
+        # print("\t\tExtending vocabulary...")
         document_vocab = set(token[1] for token in documentContent)
         #vocab=vocab.union(document_vocab)
         token_indices={w:[] for w in document_vocab}
@@ -87,11 +89,11 @@ if __name__ == "__main__":
         for token in document_vocab:
             db_cursor.execute(token_insert_statement,(token,token))
         # Find token indices 
-        print("\t\tIndexing token positions...")
+        # print("\t\tIndexing token positions...")
         for idx,token in documentContent:    
             token_indices[token].append(idx)
         # Insert new postings
-        print("\t\tInserting new postings for document,token pairs...")
+        # print("\t\tInserting new postings for document,token pairs...")
         for token,indices in token_indices.items():
             db_cursor.execute(posting_insert_statement,
                               (token,
