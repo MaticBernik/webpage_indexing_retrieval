@@ -1,4 +1,4 @@
-from index import preprocess_document, extract_text, extract_text_tokenize
+from build_index import preprocess_document, extract_text_tokenize
 from pathlib import Path
 from stopwords import stop_words_slovene
 import sqlite3
